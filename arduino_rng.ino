@@ -133,7 +133,7 @@ void buildByte(boolean input){
   if (byte_counter == 0){
     blinkLed(10);
     if (output_format == ASCII_BYTE) Serial.println(out, DEC);
-    if (output_format == BINARY) Serial.println(0x100 + out, BIN);
+    if (output_format == BINARY) Serial.println(0x100 + out, BIN); // cheap trick to enforce leading 0s ;)
     if (output_format == KB_EMULATOR){
       kb_buff_raw[kb_buff_index++] = out;
       if (kb_buff_index>=KB_RAW_LEN){
