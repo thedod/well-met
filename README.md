@@ -29,7 +29,7 @@ Although it would be daft to *rely* on the ability of peers to meet face to face
 and it's not trivial to generate strong enough shared secrets (especially if you're meeting many people at the same time).
 
 Even less secure mediums (e.g. [etherpads](https://pad.riseup.net) or IRC servers, where peers are forced to trust a singe-point-of-failure server) could benefit from a device like
-*well met*, and hopefully &mdash; people will come up with other uses for such gadgets.
+*well met*, and hopefully &mdash; people will [come up](https://github.com/thedod/well-met/wiki) with other uses for such gadgets.
 
 ### Disclaimer
 
