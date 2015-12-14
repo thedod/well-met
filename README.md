@@ -1,4 +1,4 @@
-This is a variation on @robseward's [arduino-rng](). It uses the same [circuit](http://robseward.com/misc/RNG2/#circuit) [with an additional button &mdash; see below], but 
+This is a variation on @robseward's [arduino-rng](https://github.com/robseward/arduino-rng/). It uses the same [circuit](http://robseward.com/misc/RNG2/#circuit) [with an additional button &mdash; see below], but 
 requires a board that supports [keyboard emulation](https://www.arduino.cc/en/Reference/MouseKeyboard) [I used a [Micro](https://www.arduino.cc/en/Main/ArduinoBoardMicro)].
 
 Instead of generating an endless stream of random bits, each time you reset the device, it:
