@@ -40,7 +40,7 @@ Even less secure mediums (e.g. [etherpads](https://pad.riseup.net) or IRC server
 
 As suggested by @yuvadm, there's now a `kb_debug` mode, where instead of generating a single 48 byte base64 string [to be sent whenever the button is pressed],
 it continuously generates a string, sends it (followed by the new-line character), and repeats the process. This way we can open a text editor and let the device
-"type" the data into it, decode the base64 with [`b64decode.py`], and test the data's randomness (e.g. with [rngtest](http://linuxcommand.org/man_pages/rngtest1.html)).
+"type" the data into it, decode the base64 [with `b64decode.py`], and test the data's randomness (e.g. with [rngtest](http://linuxcommand.org/man_pages/rngtest1.html)).
 
 To activate `kb_debug`, keep the button pressed until calibration ends.
 
