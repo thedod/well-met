@@ -36,6 +36,7 @@ boolean initializing = true;
 
 int kb_buff_index = 0;
 boolean kb_buff_ready = false;
+boolean kb_debug = false;
 char kb_buff_raw[KB_RAW_LEN];
 char kb_buff_b64[KB_B64_LEN];
 int button_current = LOW;
@@ -44,20 +45,20 @@ int button_previous = LOW;
 unsigned int calibration_counter = 0;
 
 
-void setup(){
+void setup() {
   pinMode(led_pin, OUTPUT);
   Serial.begin(baud_rate);
-  for (int i = 0; i<BINS_SIZE; i++){
+  for (int i = 0; i < BINS_SIZE; i++) {
     bins[i] = 0;
   }
 }
 
-void loop(){
+void loop() {
   byte threshold;
-  if (kb_buff_ready){
+  if (kb_buff_ready) {
     button_previous = button_current;
     button_current = digitalRead(button_pin);
-    if (button_current==HIGH && button_previous==LOW){
+    if (button_current == HIGH && button_previous == LOW) {
       Keyboard.begin();
       Keyboard.print(kb_buff_b64);
       Keyboard.end();
@@ -65,11 +66,15 @@ void loop(){
   } else {
     int adc_value = analogRead(adc_pin);
     byte adc_byte = adc_value >> 2;
-    if (calibration_counter >= CALIBRATION_SIZE){
+    if (calibration_counter >= CALIBRATION_SIZE) {
       threshold = findThreshold();
+      // Keeping the button pressed during callibration enters debug mode
+      // where we constantly generate new buffers and send them via keyboard
+      // emulation (to enable sending the result to rngtest).
+      if (initializing && output_format == KB_EMULATOR && digitalRead(button_pin) == HIGH) kb_debug = true;
       initializing = false;
     }
-    if (initializing){
+    if (initializing) {
       calibrate(adc_byte);
       calibration_counter++;
     } else {
@@ -78,10 +83,10 @@ void loop(){
   }
 }
 
-void processInput(byte adc_byte, byte threshold){
+void processInput(byte adc_byte, byte threshold) {
   boolean input_bool;
   input_bool = (adc_byte < threshold) ? 1 : 0;
-  switch (bias_removal){
+  switch (bias_removal) {
     case VON_NEUMANN:
       vonNeumann(input_bool);
       break;
@@ -94,35 +99,35 @@ void processInput(byte adc_byte, byte threshold){
   }
 }
 
-void exclusiveOr(byte input){
+void exclusiveOr(byte input) {
   static boolean flip_flop = 0;
   flip_flop = !flip_flop;
   buildByte(flip_flop ^ input);
 }
 
-void vonNeumann(byte input){
+void vonNeumann(byte input) {
   static int count = 1;
   static boolean previous = 0;
   static boolean flip_flop = 0;
 
   flip_flop = !flip_flop;
 
-  if (flip_flop){
-    if (input == 1 && previous == 0){
+  if (flip_flop) {
+    if (input == 1 && previous == 0) {
       buildByte(0);
     }
-    else if (input == 0 && previous == 1){
+    else if (input == 0 && previous == 1) {
       buildByte(1);
     }
   }
   previous = input;
 }
 
-void buildByte(boolean input){
+void buildByte(boolean input) {
   static int byte_counter = 0;
   static byte out = 0;
 
-  if (input == 1){
+  if (input == 1) {
     out = (out << 1) | 0x01;
   }
   else {
@@ -130,21 +135,30 @@ void buildByte(boolean input){
   }
   byte_counter++;
   byte_counter %= 8;
-  if (byte_counter == 0){
+  if (byte_counter == 0) {
     blinkLed(10);
     if (output_format == ASCII_BYTE) Serial.println(out, DEC);
-    if (output_format == BINARY) Serial.println(0x100 + out, BIN); // cheap trick to enforce leading 0s ;)
-    if (output_format == KB_EMULATOR){
+    if (output_format == BINARY) Serial.print(out, BIN);
+    if (output_format == KB_EMULATOR) {
       kb_buff_raw[kb_buff_index++] = out;
-      if (kb_buff_index>=KB_RAW_LEN){
+      if (kb_buff_index >= KB_RAW_LEN) {
         base64_encode(kb_buff_b64, kb_buff_raw, KB_RAW_LEN);
-        for (int i = 0; i<KB_B64_LEN; i++){
-          // make it url-safe
-         if (kb_buff_b64[i]=='/') kb_buff_b64[i] = '_';
-         if (kb_buff_b64[i]=='+') kb_buff_b64[i] = '-';
+        for (int i = 0; i < KB_B64_LEN; i++) {
+          if (!kb_debug) {
+            // make it url-safe
+            if (kb_buff_b64[i] == '/') kb_buff_b64[i] = '_';
+            if (kb_buff_b64[i] == '+') kb_buff_b64[i] = '-';
+          }
         }
-        kb_buff_ready = true;
-        digitalWrite(led_pin, HIGH);
+        if (kb_debug) {
+          Keyboard.begin();
+          Keyboard.println(kb_buff_b64);
+          Keyboard.end();
+          kb_buff_index = 0;
+        } else {
+          kb_buff_ready = true;
+          digitalWrite(led_pin, HIGH);
+        }
       }
     }
     out = 0;
@@ -153,25 +167,25 @@ void buildByte(boolean input){
 }
 
 
-void calibrate(byte adc_byte){
+void calibrate(byte adc_byte) {
   bins[adc_byte]++;
   printStatus();
 }
 
-unsigned int findThreshold(){
+unsigned int findThreshold() {
   unsigned long half;
   unsigned long total = 0;
   int i;
 
-  for (i = 0; i < BINS_SIZE; i++){
+  for (i = 0; i < BINS_SIZE; i++) {
     total += bins[i];
   }
 
   half = total >> 1;
   total = 0;
-  for (i = 0; i < BINS_SIZE; i++){
+  for (i = 0; i < BINS_SIZE; i++) {
     total += bins[i];
-    if (total > half){
+    if (total > half) {
       break;
     }
   }
@@ -179,19 +193,19 @@ unsigned int findThreshold(){
 }
 
 //Blinks an LED after each 10th of the calibration completes
-void printStatus(){
+void printStatus() {
   unsigned int increment = CALIBRATION_SIZE / 10;
   static unsigned int num_increments = 0; //progress units so far
   unsigned int threshold;
 
   threshold = (num_increments + 1) * increment;
-  if (calibration_counter > threshold){
+  if (calibration_counter > threshold) {
     num_increments++;
     blinkLed(30);
   }
 }
 
-void blinkLed(int duration){
+void blinkLed(int duration) {
   digitalWrite(led_pin, HIGH);
   delay(duration);
   digitalWrite(led_pin, LOW);

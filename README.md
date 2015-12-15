@@ -1,3 +1,8 @@
+**Heads up:** at the moment, the randomness of the output of this device is [not satisfactory](http://pastebin.com/wAbWhTfP), but at least we're testing it now :wink:. Stay tuned...
+
+---------
+
+
 This is a variation on @robseward's [arduino-rng](https://github.com/robseward/arduino-rng/). It uses the same [circuit](http://robseward.com/misc/RNG2/#circuit) [with an additional button &mdash; see below], but 
 requires a board that supports [keyboard emulation](https://www.arduino.cc/en/Reference/MouseKeyboard) [I used a [Micro](https://www.arduino.cc/en/Main/ArduinoBoardMicro)].
 
@@ -30,6 +35,14 @@ and it's not trivial to generate strong enough shared secrets (especially if you
 
 Even less secure mediums (e.g. [etherpads](https://pad.riseup.net) or IRC servers, where peers are forced to trust a singe-point-of-failure server) could benefit from a device like
 *well met*, and hopefully &mdash; people will [come up](https://github.com/thedod/well-met/wiki) with other uses for such gadgets.
+
+### *[New]:* kb_debug
+
+As suggested by @yuvadm, there's now a `kb_debug` mode, where instead of generating a single 48 byte base64 string [to be sent whenever the button is pressed],
+it continuously generates a string, sends it (followed by the new-line character), and repeats the process. This way we can open a text editor and let the device
+"type" the data into it, decode the base64 with [`b64decode.py`], and test the data's randomness (e.g. with [rngtest](http://linuxcommand.org/man_pages/rngtest1.html)).
+
+To activate `kb_debug`, keep the button pressed until calibration ends.
 
 ### Disclaimer
 
