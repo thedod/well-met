@@ -1,4 +1,10 @@
-**Heads up:** at the moment, the randomness of the output of this device is [not satisfactory](http://pastebin.com/wAbWhTfP), but at least we're testing it now :wink:. Stay tuned...
+**Heads up:** 
+
+* At the moment, the randomness of the output of this device is [not satisfactory](http://pastebin.com/wAbWhTfP), but at least we're testing it now :wink:.
+* **Worse:** turns out that connecting a USB device to other people's computers is a [huge risk](https://github.com/thedod/well-met/issues/1) and since this device is intended for privacy-concerened users,
+  the risk of mass infection could be disastrous.
+
+Ah, well. Back to the drawing board. Bottom line &mdash; **don't use this!**, This project only stays here as a warning for folks who might contemplate similar mistakes :wink:
 
 ---------
 
